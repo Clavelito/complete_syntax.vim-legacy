@@ -1,7 +1,7 @@
 
 " Author:      Clavelito <maromomo@hotmail.com>
-" Last Change: Thu, 10 Feb 2022 23:16:24 +0900
-" Version:     0.1-lagacy
+" Last Change: Wed, 03 May 2023 12:07:10 +0900
+" Version:     0.2-legacy
 " License:     http://www.apache.org/licenses/LICENSE-2.0
 "
 " Description: Keyword completion is performed using syntax highlighting files.
@@ -30,7 +30,7 @@ endfunction
 let s:temp_dir = isdirectory(getenv('TEMP')) ? getenv('TEMP') : '/tmp'
 let s:runtime_path = split(&runtimepath, ',')
 let s:beginpt = '^\s*syn\=\%(tax\)\=\s\+keyword\s\+\S\+'
-let s:sourcept = '^\s*runtime!\=\s\+\(syntax/[a-z0-9]\+[.]vim\)\s*$'
+let s:sourcept = '^\s*runtime!\=\s\+syntax/\([a-z0-9]\+[.]vim\)\s*$'
 let s:complete_syntax_pid = '#' .. getpid()
 let s:lasttype = ''
 
