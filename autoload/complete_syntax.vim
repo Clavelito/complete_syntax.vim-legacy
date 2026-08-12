@@ -1,7 +1,7 @@
 
 " Author:      Clavelito <maromomo@hotmail.com>
-" Last Change: Wed, 03 May 2023 12:07:10 +0900
-" Version:     0.2-legacy
+" Last Change: Thu, 13 Aug 2026 07:40:00 +0900
+" Version:     0.3-legacy
 " License:     http://www.apache.org/licenses/LICENSE-2.0
 "
 " Description: Keyword completion is performed using syntax highlighting files.
@@ -27,11 +27,11 @@ function complete_syntax#complete_syntax()
   endif
 endfunction
 
-let s:temp_dir = isdirectory(getenv('TEMP')) ? getenv('TEMP') : '/tmp'
+let s:temp_dir = !empty(getenv('TEMP')) && isdirectory(getenv('TEMP')) ? getenv('TEMP') : '/tmp'
 let s:runtime_path = split(&runtimepath, ',')
 let s:beginpt = '^\s*syn\=\%(tax\)\=\s\+keyword\s\+\S\+'
 let s:sourcept = '^\s*runtime!\=\s\+syntax/\([a-z0-9]\+[.]vim\)\s*$'
-let s:complete_syntax_pid = '#' .. getpid()
+let s:complete_syntax_pid = '#'. getpid()
 let s:lasttype = ''
 
 function s:SetMap()
@@ -46,7 +46,7 @@ function s:CompleteSyntaxFile()
   endif
   let bname = s:complete_syntax_pid. &filetype
   let save_dir = getcwd()
-  exec 'silent cd '. s:temp_dir
+  exec 'silent lcd '. s:temp_dir
   if !bufexists(bname) && &modifiable && &ft != 'qf' && &ft != 'netrw'
     let bufnr = bufadd(bname)
     call setbufvar(bufnr, '&swapfile', 0)
@@ -59,7 +59,7 @@ function s:CompleteSyntaxFile()
     endfor
     call setbufvar(bufnr, 'complete', s:complete_syntax_pid)
   endif
-  exec 'silent cd '. save_dir
+  exec 'silent lcd '. save_dir
   call s:SelectCompleteBuffer()
 endfunction
 
