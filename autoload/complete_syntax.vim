@@ -1,7 +1,7 @@
 
 " Author:      Clavelito <maromomo@hotmail.com>
-" Last Change: Thu, 13 Aug 2026 07:40:00 +0900
-" Version:     0.3-legacy
+" Last Change: Thu, 13 Aug 2026 14:44:17 +0900
+" Version:     0.4-lagacy
 " License:     http://www.apache.org/licenses/LICENSE-2.0
 "
 " Description: Keyword completion is performed using syntax highlighting files.
@@ -132,8 +132,7 @@ function s:FileReadableList()
   let fname = []
   for rtp in s:runtime_path
     if isdirectory(rtp. '/syntax/'. &filetype)
-      let fname = split(system(
-            \ 'ls '. rtp. '/syntax/'. &filetype. '/*.vim'), '\n')
+      let fname = split(expand(rtp. '/syntax/'. &filetype. '/*.vim'), '\n')
     endif
     call add(fname, rtp. '/syntax/'. &filetype. '.vim')
     for fn in fname
