@@ -1,7 +1,7 @@
 
 " Author:      Clavelito <maromomo@hotmail.com>
-" Last Change: Fri, 14 Aug 2026 09:36:00 +0900
-" Version:     0.5-legacy
+" Last Change: Wed, 19 Aug 2026 05:46:01 +0900
+" Version:     0.6-legacy
 " License:     http://www.apache.org/licenses/LICENSE-2.0
 "
 " Description: Keyword completion is performed using syntax highlighting files.
@@ -30,6 +30,7 @@ endfunction
 let s:temp_dir = !empty(getenv('TEMP')) && isdirectory(getenv('TEMP')) ? getenv('TEMP') : '/tmp'
 let s:runtime_path = split(&runtimepath, ',')
 let s:beginpt = '^\s*syn\=\%(tax\)\=\s\+keyword\s\+\S\+'
+let s:matchpt = '^\s*syn\=\%(tax\)\=\s\+match\s\+\S\+\s\+.\{-}\\<[^>]\+\\>'
 let s:sourcept = '^\s*runtime!\=\s\+syntax/\([a-z0-9]\+[.]vim\)\s*$'
 let s:complete_syntax_pid = '#'. getpid()
 let s:lasttype = ''
@@ -74,6 +75,8 @@ function s:GetWordsList(path)
     elseif flag == sum && line =~ '^\s*\\'
       call extend(wordlist, s:ParseLine(line, '^\s*\\'))
       let flag = sum + 1
+    elseif line =~# s:matchpt
+      call extend(wordlist, s:ParseLine2(line))
     elseif line =~# s:sourcept
       let rtp = substitute(a:path, '[^/]\+$', '', '')
       let path2 = substitute(line, s:sourcept, rtp. '\1', '')
@@ -91,6 +94,13 @@ function s:ParseLine(line, pt)
         \. '\|\s\%(nextgroup\|containedin\)=\S\+'
         \. '\|\s\%(skipempty\|skipwhite\|skipnl\|contained\)\>', '', 'g')
   let str = substitute(str, '\s\(\S\+\)\[\(\S\+\)\]', ' \1 \1\2', 'g')
+  return split(str)
+endfunction
+
+function s:ParseLine2(line)
+  let str = substitute(a:line, '^[^<]\+\\<\([^>]\+\)\\>.*$', '\1', '')
+  let str = substitute(str, '\\[_%]\=.', ' ', 'g')
+  let str = substitute(str, '\S*[^_A-Za-z0-9[:blank:]]\S*\|\<\w\>', '', 'g')
   return split(str)
 endfunction
 
