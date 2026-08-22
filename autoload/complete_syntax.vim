@@ -1,7 +1,7 @@
 
 " Author:      Clavelito <maromomo@hotmail.com>
-" Last Change: Wed, 19 Aug 2026 05:46:01 +0900
-" Version:     0.6-legacy
+" Last Change: Sat, 22 Aug 2026 14:29:00 +0900
+" Version:     0.7-legacy
 " License:     http://www.apache.org/licenses/LICENSE-2.0
 "
 " Description: Keyword completion is performed using syntax highlighting files.
@@ -18,12 +18,18 @@ let s:cpo_save = &cpo
 set cpo&vim
 
 function complete_syntax#complete_syntax()
-  if !empty(s:FileReadableList())
+  if !empty(s:FileReadableList()) && &modifiable && &ft != 'qf' && &ft != 'netrw'
     augroup CompleteSyntax
       autocmd!
       autocmd BufEnter * call <SID>SelectCompleteBuffer(1)
     augroup END
-    call s:SetMap()
+    if exists('*timer_start')
+      call timer_start(0, 's:CompleteSyntaxFile')
+    elseif exists('+autocomplete') && &autocomplete
+      call s:CompleteSyntaxFile()
+    else
+      call s:SetMap()
+    endif
   endif
 endfunction
 
@@ -32,7 +38,7 @@ let s:runtime_path = split(&runtimepath, ',')
 let s:beginpt = '^\s*syn\=\%(tax\)\=\s\+keyword\s\+\S\+'
 let s:matchpt = '^\s*syn\=\%(tax\)\=\s\+match\s\+\S\+\s\+.\{-}\\<[^>]\+\\>'
 let s:sourcept = '^\s*runtime!\=\s\+syntax/\([a-z0-9]\+[.]vim\)\s*$'
-let s:complete_syntax_pid = '#'. getpid()
+let s:complete_syntax_pid = '#' . getpid()
 let s:lasttype = ''
 
 function s:SetMap()
@@ -41,13 +47,13 @@ function s:SetMap()
   call s:SelectCompleteBuffer(1)
 endfunction
 
-function s:CompleteSyntaxFile()
+function s:CompleteSyntaxFile(...)
   if empty(&filetype)
     return ''
   endif
-  let bname = s:complete_syntax_pid. &filetype
+  let bname = s:complete_syntax_pid . &filetype
   let save_dir = getcwd()
-  exec 'silent lcd '. s:temp_dir
+  exec 'silent lcd ' . s:temp_dir
   if !bufexists(bname) && &modifiable && &ft != 'qf' && &ft != 'netrw'
     let bufnr = bufadd(bname)
     call setbufvar(bufnr, '&swapfile', 0)
@@ -60,7 +66,7 @@ function s:CompleteSyntaxFile()
     endfor
     call setbufvar(bufnr, 'complete', s:complete_syntax_pid)
   endif
-  exec 'silent lcd '. save_dir
+  exec 'silent lcd ' . save_dir
   call s:SelectCompleteBuffer()
 endfunction
 
@@ -79,7 +85,7 @@ function s:GetWordsList(path)
       call extend(wordlist, s:ParseLine2(line))
     elseif line =~# s:sourcept
       let rtp = substitute(a:path, '[^/]\+$', '', '')
-      let path2 = substitute(line, s:sourcept, rtp. '\1', '')
+      let path2 = substitute(line, s:sourcept, rtp . '\1', '')
       if filereadable(path2)
         call extend(wordlist, s:GetWordsList(path2))
       endif
@@ -90,9 +96,9 @@ function s:GetWordsList(path)
 endfunction
 
 function s:ParseLine(line, pt)
-  let str = substitute(a:line, a:pt
-        \. '\|\s\%(nextgroup\|containedin\)=\S\+'
-        \. '\|\s\%(skipempty\|skipwhite\|skipnl\|contained\)\>', '', 'g')
+  let str = substitute(a:line, '\C' . a:pt
+        \ . '\|\s\%(nextgroup\|containedin\)=\S\+'
+        \ . '\|\s\%(skipempty\|skipwhite\|skipnl\|contained\)\>', '', 'g')
   let str = substitute(str, '\s\(\S\+\)\[\(\S\+\)\]', ' \1 \1\2', 'g')
   return split(str)
 endfunction
@@ -109,7 +115,7 @@ function s:SelectCompleteBuffer(...)
     return ''
   endif
   let s:lasttype = &filetype
-  let compbufpt = s:complete_syntax_pid. &filetype. '$'
+  let compbufpt = s:complete_syntax_pid . &filetype . '$'
   let flag = 0
   for dict in getbufinfo()
     if s:VariableCompleteExists(dict)
@@ -141,10 +147,10 @@ function s:FileReadableList()
   let flist = []
   let fname = []
   for rtp in s:runtime_path
-    if isdirectory(rtp. '/syntax/'. &filetype)
-      let fname = split(glob(rtp. '/syntax/'. &filetype. '/*.vim'), '\n')
+    if isdirectory(rtp . '/syntax/' . &filetype)
+      let fname = split(glob(rtp . '/syntax/' . &filetype . '/*.vim'), '\n')
     endif
-    call add(fname, rtp. '/syntax/'. &filetype. '.vim')
+    call add(fname, rtp . '/syntax/' . &filetype . '.vim')
     for fn in fname
       if filereadable(fn)
         call add(flist, fn)
