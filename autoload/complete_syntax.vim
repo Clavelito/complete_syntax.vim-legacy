@@ -1,7 +1,7 @@
 
 " Author:      Clavelito <maromomo@hotmail.com>
-" Last Change: Sat, 22 Aug 2026 14:29:00 +0900
-" Version:     0.7-legacy
+" Last Change: Sun, 23 Aug 2026 19:47:00 +0900
+" Version:     0.8-legacy
 " License:     http://www.apache.org/licenses/LICENSE-2.0
 "
 " Description: Keyword completion is performed using syntax highlighting files.
@@ -23,9 +23,9 @@ function complete_syntax#complete_syntax()
       autocmd!
       autocmd BufEnter * call <SID>SelectCompleteBuffer(1)
     augroup END
-    if exists('*timer_start')
+    if exists('*timer_start') && !&readonly
       call timer_start(0, 's:CompleteSyntaxFile')
-    elseif exists('+autocomplete') && &autocomplete
+    elseif exists('+autocomplete') && &autocomplete && !&readonly
       call s:CompleteSyntaxFile()
     else
       call s:SetMap()
