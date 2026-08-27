@@ -1,7 +1,7 @@
 
 " Author:      Clavelito <maromomo@hotmail.com>
-" Last Change: Thu, 27 Aug 2026 12:05:00 +0900
-" Version:     0.9-legacy
+" Last Change: Fri, 28 Aug 2026 07:10:30 +0900
+" Version:     0.10-legacy
 " License:     http://www.apache.org/licenses/LICENSE-2.0
 "
 " Description: Keyword completion is performed using syntax highlighting files.
@@ -36,7 +36,7 @@ endfunction
 let s:temp_dir = !empty(getenv('TEMP')) && isdirectory(getenv('TEMP')) ? getenv('TEMP') : '/tmp'
 let s:runtime_path = split(&runtimepath, ',')
 let s:beginpt = '^\s*syn\=\%(tax\)\=\s\+keyword\s\+\S\+'
-let s:matchpt = '^\s*syn\=\%(tax\)\=\s\+match\s\+\S\+\s\+.\{-}\\<[^>]\+\\>'
+let s:matchpt = '^\s*syn\=\%(tax\)\=\s\+match\s\+\S\+\s\+.\{-}\\<\([^>]\+\)\\>.*$'
 let s:sourcept = '^\s*runtime!\=\s\+syntax/\([a-z0-9]\+[.]vim\)\s*$'
 let s:complete_syntax_pid = '#' . getpid()
 let s:lasttype = ''
@@ -82,10 +82,10 @@ function s:GetWordsList(path)
       call extend(wordlist, s:ParseLine(line, '^\s*\\'))
       let flag = sum + 1
     elseif line =~# s:matchpt
-      call extend(wordlist, s:ParseLine2(line))
+      call extend(wordlist, s:ParseLine2(line, s:matchpt))
     elseif line =~# s:sourcept
       let rtp = substitute(a:path, '[^/]\+$', '', '')
-      let path2 = substitute(line, s:sourcept, rtp . '\1', '')
+      let path2 = substitute(line, '\C' . s:sourcept, rtp . '\1', '')
       if filereadable(path2)
         call extend(wordlist, s:GetWordsList(path2))
       endif
@@ -103,8 +103,8 @@ function s:ParseLine(line, pt)
   return split(str)
 endfunction
 
-function s:ParseLine2(line)
-  let str = substitute(a:line, '^[^<]\+\\<\([^>]\+\)\\>.*$', '\1', '')
+function s:ParseLine2(line, pt)
+  let str = substitute(a:line, '\C' . a:pt, '\1', '')
   let str = substitute(str, '\(\w*\)\(\w\)\\[?=]\(\w*\)', ' \1\2\3 \1\3', 'g')
   let str = substitute(str, '\(\w*\)\\%\=(\(\w\+\)\\)\\[?=]\(\w*\)', ' \1\2\3 \1\3', 'g')
   let str = substitute(str, '\(\w\+\)\\%\=(\(\%(\w\+\|\\|\)\+\)\\)', '\=s:ParseStr(submatch(1), submatch(2))', 'g')
