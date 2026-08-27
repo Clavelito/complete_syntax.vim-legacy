@@ -1,7 +1,7 @@
 
 " Author:      Clavelito <maromomo@hotmail.com>
-" Last Change: Sun, 23 Aug 2026 19:47:00 +0900
-" Version:     0.8-legacy
+" Last Change: Thu, 27 Aug 2026 12:05:00 +0900
+" Version:     0.9-legacy
 " License:     http://www.apache.org/licenses/LICENSE-2.0
 "
 " Description: Keyword completion is performed using syntax highlighting files.
@@ -105,9 +105,21 @@ endfunction
 
 function s:ParseLine2(line)
   let str = substitute(a:line, '^[^<]\+\\<\([^>]\+\)\\>.*$', '\1', '')
+  let str = substitute(str, '\(\w*\)\(\w\)\\[?=]\(\w*\)', ' \1\2\3 \1\3', 'g')
+  let str = substitute(str, '\(\w*\)\\%\=(\(\w\+\)\\)\\[?=]\(\w*\)', ' \1\2\3 \1\3', 'g')
+  let str = substitute(str, '\(\w\+\)\\%\=(\(\%(\w\+\|\\|\)\+\)\\)', '\=s:ParseStr(submatch(1), submatch(2))', 'g')
   let str = substitute(str, '\\[_%]\=.', ' ', 'g')
   let str = substitute(str, '\S*[^_A-Za-z0-9[:blank:]]\S*\|\<\w\>', '', 'g')
   return split(str)
+endfunction
+
+function s:ParseStr(head, item)
+  let items = split(a:item, '\\|')
+  let line = ''
+  for str in items
+    let line .= a:head . str . ' '
+  endfor
+  return line
 endfunction
 
 function s:SelectCompleteBuffer(...)
